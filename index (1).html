@@ -1,0 +1,278 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Zim Price Card</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: app tab bar (Zim · SA · Mogas TM · Mogas 2 · Gasoil · Zambia · DAP · Spot), shared picture-fill box, the active card; Share view shows only the clean card for a screenshot */
+:root{
+  --bg:#eef1f5; --card:#ffffff; --ink:#1b2433; --muted:#66717f; --line:#dfe4ea;
+  --navy:#1f3864; --navy-fg:#ffffff; --title:#1b2433; --title-fg:#ffffff; --band:#5b6472; --band-fg:#ffffff; --sub:#e3e9f4;
+  --d50:#2e5e8c; --ulp:#b8720c; --d50t:#f0f5fb; --ulpt:#fdf5e8;
+  --prem:#c00000; --disc:#0f7a3d; --ok:#0f7a3d; --bad:#c0262d; --inp:#fff4cf; --inpk:#0b4fd1; --hi:#e2efda; --yel:#fff59d; --pnk:#f6dcdc; --blu:#dbe9f5;
+  --sans:"IBM Plex Sans",-apple-system,system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f141b; --card:#182029; --ink:#e7edf4; --muted:#93a0af; --line:#2a3542;
+  --navy:#2b4a80; --navy-fg:#e7edf4; --title:#0b111b; --title-fg:#e7edf4; --band:#3e4755; --band-fg:#e7edf4; --sub:#1f2b3b;
+  --d50:#3f78ad; --ulp:#c98a2a; --d50t:#16263a; --ulpt:#33260f;
+  --prem:#ff7a7a; --disc:#57c98a; --ok:#57c98a; --bad:#ff8a8f; --inp:#3a3214; --inpk:#9cc0ff; --hi:#16301b; --yel:#47410f; --pnk:#3d2124; --blu:#18293d; color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f141b; --card:#182029; --ink:#e7edf4; --muted:#93a0af; --line:#2a3542;
+  --navy:#2b4a80; --navy-fg:#e7edf4; --title:#0b111b; --title-fg:#e7edf4; --band:#3e4755; --band-fg:#e7edf4; --sub:#1f2b3b;
+  --d50:#3f78ad; --ulp:#c98a2a; --d50t:#16263a; --ulpt:#33260f;
+  --prem:#ff7a7a; --disc:#57c98a; --ok:#57c98a; --bad:#ff8a8f; --inp:#3a3214; --inpk:#9cc0ff; --hi:#16301b; --yel:#47410f; --pnk:#3d2124; --blu:#18293d; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px}
+.wrap{max-width:480px;margin:0 auto;padding:10px 14px 110px}
+.apptabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:10px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+.apptabs button{border:0;background:transparent;color:var(--muted);font:600 13.5px var(--sans);padding:9px 2px;border-radius:9px;cursor:pointer}
+.apptabs button.on{background:var(--navy);color:var(--navy-fg)}
+.sec{display:none}.sec.on{display:block}
+.hint{font-size:12px;color:var(--muted);margin:0 0 10px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:20px;padding:6px 11px;font:600 13px var(--sans);color:var(--ink);cursor:pointer;display:flex;gap:6px;align-items:center}
+.chip.on{border-color:var(--navy);box-shadow:inset 0 -3px 0 var(--d50)}
+.chip input{margin:0;accent-color:var(--d50)}
+/* inputs */
+.num{width:100%;max-width:92px;text-align:right;font:500 13.5px var(--mono);color:var(--inpk);background:var(--inp);border:0;border-radius:4px;padding:4px 5px}
+.ib{display:flex;gap:3px;justify-content:flex-end;align-items:center}
+.pm{flex:0 0 24px;height:26px;border:1px solid var(--line);border-radius:4px;background:var(--card);color:var(--ink);font:600 13px var(--mono);padding:0;cursor:pointer}
+.out{display:none}
+body.share .edit,body.share .apptabs,body.share .hint,body.share .pf,body.share .chips,body.share .noshare{display:none!important}
+body.share .out{display:inline}
+body.share .wrap{padding:8px 10px 56px}
+/* generic table card */
+.mc{background:var(--card);border:2px solid var(--title);border-radius:6px;overflow:hidden;margin-bottom:12px}
+.mt{background:var(--title);color:var(--title-fg);padding:8px 10px;font-weight:600;font-size:14.5px}
+.mt input{width:100%;background:rgba(255,255,255,.12);border:0;border-radius:4px;color:inherit;font:600 14px var(--sans);padding:4px 6px}
+body.share .mt input{background:transparent;padding:0;pointer-events:none}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th{padding:6px 8px;font-size:11.5px;color:var(--muted);text-align:right;font-weight:600}
+th:first-child{text-align:left}
+td{border-top:1px solid var(--line);padding:4px 8px;font-size:14px}
+td.n{text-align:right;font:600 14px var(--mono);white-space:nowrap}
+tr.band td{background:var(--band);color:var(--band-fg);text-align:center;font-weight:600;font-size:12.5px;letter-spacing:.04em;padding:4px}
+tr.sub td{background:var(--sub);color:var(--navy);font-weight:700;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;padding:5px 8px}
+:root[data-theme="dark"] tr.sub td{color:var(--d50)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) tr.sub td{color:#9cc0ff}}
+.prem{color:var(--prem)} .disc{color:var(--disc)} .na{color:var(--muted);font-weight:400}
+.foot{font-size:10.5px;color:var(--muted);padding:5px 8px;border-top:1px solid var(--line)}
+body.share td{padding:3px 8px;font-size:13px}
+/* SA */
+#sa th.d,#sa th.u{color:#fff;text-align:right;font-size:13px;width:24%}
+#sa th.d{background:var(--d50);border-right:3px solid var(--title)} #sa th.u{background:var(--ulp)}
+#sa td.nd{background:var(--d50t);border-right:3px solid var(--title)} #sa td.nu{background:var(--ulpt)}
+body.share #sa td:first-child{white-space:nowrap}
+body:not(.share) #sa .mc{display:none} body:not(.share) #sa .mc.act{display:block}
+body.share #sa .mc{display:none} body.share #sa .mc.inc{display:block}
+/* editable table cards */
+.fx th{white-space:normal;vertical-align:bottom} .fx th.u,.fx td.u{text-align:left;width:1%;white-space:nowrap;color:var(--muted);font-size:11.5px;padding-left:4px}
+.fx td.l{font-size:13.5px} .fx td.calc{color:var(--ink)} body:not(.share) .fx td.calc{color:var(--muted)}
+.fx .code{display:inline-block;min-width:18px;font:600 10px var(--mono);color:var(--muted);border:1px solid var(--line);border-radius:3px;text-align:center;margin-right:5px;padding:0 2px}
+.fx tr.ind td.l{padding-left:20px} .fx tr.bold td{font-weight:700}
+.fx tr.yel td{background:var(--yel);font-weight:700} .fx tr.grn td{background:var(--hi);font-weight:700} .fx tr.pnk td{background:var(--pnk);font-weight:700} .fx tr.blu td{background:var(--blu);font-weight:700}
+.fx tr.key td{border-top:2px solid var(--title);font-weight:700}
+.fx tr.delta td{background:var(--sub);font-weight:700;font-size:15px;border-top:2px solid var(--title)}
+.fx tr.delta td.n{font-size:15px}
+body.share .fx td.l{font-size:12.5px}
+.lh{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 10px}
+.btn.sm{padding:7px 11px;font-size:13px;border-radius:8px}
+.lay{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px}
+.lay label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);margin-bottom:8px}
+.lay input,.lay select{font:500 14px var(--sans);padding:7px 8px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);min-width:0}
+.lg{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+.lay label input{width:100%}
+.lcols{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px;font-size:12px;color:var(--muted)}
+.lcols .lc{display:flex;gap:2px} .lcols input{width:130px}
+.lay button:not(.btn){border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:7px;font:600 13px var(--sans);padding:6px 9px;cursor:pointer}
+.lay button:disabled{opacity:.35}
+.lay button.del{color:var(--bad)}
+.lr{border-top:1px solid var(--line);padding:8px 0;display:flex;flex-direction:column;gap:5px}
+.lr .l1,.lr .l2{display:flex;gap:5px;align-items:center}
+.lr .l1 input:not(.un),.lr .fm{flex:1;min-width:0} .lr .un{width:66px} .lr select{width:96px;flex:none;padding:7px 4px}
+.lr .l2 button{padding:6px 7px;flex:none}
+.lr .code{font:600 12px var(--mono);min-width:26px;text-align:center;background:var(--sub);border-radius:5px;padding:5px 3px}
+.ferr{font-size:11.5px;color:var(--bad)} .ferr:empty{display:none}
+/* Zambia */
+#zm .mt{background:var(--navy)}
+#zm .erb{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:8px 10px;background:var(--sub);font-size:12.5px}
+#zm .erb div{display:flex;flex-direction:column;gap:2px}
+#zm .erb b{font:600 14px var(--mono)}
+#zm .erb input.lab{font:600 12px var(--sans);border:0;background:var(--inp);color:var(--inpk);border-radius:4px;padding:2px 5px;width:100%}
+#zm tr.best td{background:var(--hi)}
+#zm td.sp input{font:500 13px var(--sans);border:0;background:var(--inp);color:var(--inpk);border-radius:4px;padding:3px 5px;width:100%;max-width:120px}
+body.share #zm .dhide{display:none}
+/* DAP + Spot */
+.wbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.cd{font:600 12px var(--mono);padding:6px 10px;border-radius:20px;border:1px solid var(--line);cursor:pointer}
+.cd.ok{color:var(--ok);border-color:var(--ok)} .cd.warn{color:#b8720c;border-color:#b8720c} .cd.exp{color:var(--bad);border-color:var(--bad);animation:cdp 1.2s infinite}
+@keyframes cdp{50%{opacity:.4}} @media (prefers-reduced-motion: reduce){.cd.exp{animation:none}}
+.wg{width:100%;border-collapse:collapse} .wg th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding:4px 3px;text-align:left}
+.wg td{border-top:1px solid var(--line);padding:4px 3px}
+.wg input{width:100%;min-width:0;font:500 14px var(--sans);padding:7px 7px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink)}
+.wg th input{font:700 12px var(--sans);text-align:right;text-transform:uppercase}
+.wg input.wn{font:500 14px var(--mono);text-align:right;background:var(--inp);color:var(--inpk);border-color:transparent}
+.wg td:last-child{width:30px} .wg input.dfrom{font:500 13px var(--sans);padding:7px 6px} .dapt td.dpn{font:600 12px var(--sans);color:var(--mut,#667);width:56px;white-space:nowrap} .dapt{table-layout:fixed} .dapt tbody.dloc tr:first-child td{border-top:2px solid var(--line);padding-top:8px} .dapt tr.dpr td{border-top:0} .dprods{display:flex;gap:6px;align-items:center;margin:0 0 6px;font-size:12px} .dprods input{width:80px;font:700 12px var(--sans);text-transform:uppercase;padding:6px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink)}
+.x{border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:7px;font:600 12px var(--sans);padding:5px 8px;cursor:pointer}
+.wbulk{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+.wbulk select,.wbulk input,.wset input,.wset select,.wl input,.wph input{font:500 14px var(--sans);padding:7px 8px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);min-width:0}
+.wbulk input{width:110px}
+.wset{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px}
+.wset label,.wl{display:flex;flex-direction:column;gap:3px;font-size:11.5px;color:var(--muted);margin-bottom:8px}
+.wph{display:flex;gap:6px;align-items:center;margin-bottom:8px}.wph input{flex:1}
+.wgr td{background:var(--sub)} .wgc{display:flex;gap:5px;align-items:center} .wgc input{font-weight:700}.wgc input.bas{width:96px;flex:none;font:600 12px var(--mono)}
+.phone{background:#0b141a;border-radius:12px;padding:12px 8px}
+.bubble{background:#005c4b;color:#e9edef;border-radius:10px;border-top-right-radius:2px;padding:8px 10px;font-size:13px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.bubble i{color:#cfe0d8} .bubble .mono{display:block;font:12px var(--mono);white-space:pre;overflow-x:auto;background:rgba(0,0,0,.18);border-radius:6px;padding:6px 8px}
+/* Zim */
+.zrow{display:grid;grid-template-columns:1fr 34px 116px;gap:8px;align-items:center;padding:5px 0;border-top:1px solid var(--line)}
+.zrow:first-of-type{border-top:0}
+.zrow label small{display:block;color:var(--muted);font-size:11.5px}
+.zrow input{width:100%;font:500 16px var(--mono);text-align:right;padding:8px 9px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.zrow .pm{height:36px;flex:none}
+.box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:10px}
+.box h2{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 6px;font-weight:600}
+.months{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.months label{font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+.months input{font:500 15px var(--sans);padding:8px 9px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%}
+.preview{background:var(--sub);border-radius:10px;padding:10px 12px;font:13.5px/1.45 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere;margin:0}
+/* bar */
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));z-index:6}
+.bar .in{max-width:480px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{font:600 15px var(--sans);padding:12px;border-radius:10px;border:1px solid var(--navy);background:transparent;color:var(--ink);cursor:pointer;text-align:center;text-decoration:none}
+.btn.primary{background:var(--navy);color:var(--navy-fg)}
+.msg{grid-column:1/-1;text-align:center;font-size:12.5px;color:var(--ok);min-height:16px}
+body.share .bar{background:transparent;border:0;pointer-events:none;padding:0 12px calc(8px + env(safe-area-inset-bottom,0px))}
+body.share .bar .in{grid-template-columns:auto auto;justify-content:end}
+body.share #b2,body.share .msg{display:none}
+body.share #b1{pointer-events:auto;padding:6px 14px;font-size:13px;opacity:.85}
+#b3{display:none} body.share #b3{display:block;pointer-events:auto;padding:6px 14px;font-size:13px;background:#1f8f4e;border-color:#1f8f4e;color:#fff}
+body.cap *{letter-spacing:0!important}
+.zpic .mt small{font-size:11.5px} .zpic td small{font-size:10.5px}
+.picwrap{position:fixed;left:0;top:0;z-index:-1;width:430px;padding:6px;background:var(--bg)}
+.sapic th{padding:4px 5px;font-size:11px} .sapic th.mh{background:var(--title);color:var(--title-fg);text-align:center;font-size:12px;border-left:3px solid var(--card)}
+.sapic th small{display:block;font-weight:500;opacity:.85;font-size:10.5px}
+.sapic th.cor{text-align:left;color:var(--ink);font-size:11.5px;vertical-align:bottom} .sapic th.cor small{color:var(--muted)}
+.sapic th.d,.sapic th.u{color:#fff;text-align:right} .sapic th.d{background:var(--d50)} .sapic th.u{background:var(--ulp)}
+.sapic td{padding:2px 6px;font-size:12.5px} .sapic td.n{font-size:12.5px} .sapic td.nd{background:var(--d50t)} .sapic td.nu{background:var(--ulpt)}
+.sapic th.d,.sapic td.nd{border-left:3px solid var(--card)}
+.sapic tr.band td{padding:2px;font-size:11.5px}
+body.cap td{padding-top:2px!important;padding-bottom:2px!important}
+
+.imgov{position:fixed;inset:0;z-index:20;background:rgba(10,14,20,.92);display:flex;flex-direction:column;align-items:center;gap:10px;padding:14px 14px calc(14px + env(safe-area-inset-bottom,0px));overflow:auto}
+.imgov img{max-width:100%;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.4);-webkit-touch-callout:default;user-select:auto}
+.imgov p{color:#fff;font-size:14px;text-align:center;margin:0;max-width:420px;line-height:1.45}
+.imgov .row{display:flex;gap:10px}
+.imgov .btn{color:#fff;border-color:#fff}
+.imgov .btn.primary{background:#1f8f4e;border-color:#1f8f4e}
+.btn:focus-visible,input:focus-visible,button:focus-visible{outline:2px solid var(--d50);outline-offset:2px}
+.fallback{position:absolute;left:-9999px}
+/* picture fill */
+.pf{margin-bottom:10px}
+.pf-zone{border:2px dashed var(--line);border-radius:12px;padding:11px;text-align:center;cursor:pointer;background:var(--card)}
+.pf-zone:hover,.pf-zone.over{border-color:var(--d50)}
+.pf-zone.busy{opacity:.6;pointer-events:none}
+.pf-main{font-weight:600;font-size:14px}.pf-sub{font-size:11.5px;color:var(--muted);margin-top:2px}
+.pf-stat{font-size:12.5px;margin-top:5px;min-height:16px;color:var(--ok)}.pf-stat.bad{color:var(--bad)}
+.pf input[type=file]{display:none}
+.filled{animation:pfFlash 1.6s ease-out}@keyframes pfFlash{0%{box-shadow:0 0 0 3px var(--d50)}100%{box-shadow:0 0 0 0 transparent}}
+@media (prefers-reduced-motion: reduce){.filled{animation:none}}
+</style></head><body>
+<div class="wrap">
+ <section class="sec on" id="zim"></section>
+</div>
+<div class="bar"><div class="in">
+ <button class="btn" id="b1" type="button">Copy text</button>
+ <button class="btn primary" id="b2" type="button">WhatsApp</button>
+ <div class="msg" id="msg" aria-live="polite"></div>
+</div></div>
+<textarea class="fallback" id="fb" aria-hidden="true" tabindex="-1"></textarea>
+<script>
+/* ===== shared helpers ===== */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const load=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v??d}catch(e){return d}};
+const store=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const num=x=>{if(x==null)return null;let s=String(x).trim().replace(/[, ]/g,"");if(!s||/^[-–]$/.test(s)||/^n\/?a$/i.test(s))return null;const neg=/^\(.*\)$/.test(s);s=s.replace(/[()+\s$]/g,"");const n=parseFloat(s);return isNaN(n)?null:(neg?-Math.abs(n):n)};
+const n0=x=>num(x)??0;
+const toN=v=>typeof v==="number"?(isFinite(v)?v:null):(typeof v==="string"?num(v.replace(/[^\d.,()+\-−–]/g,"").replace(/[−–]/g,"-")):null);
+const flat=(d,keys)=>{const out={};const walk=o=>{if(!o||typeof o!=="object")return;for(const [k,v] of Object.entries(o)){if(keys.includes(k)&&!(k in out)&&(v==null||typeof v!=="object"))out[k]=v;else if(v&&typeof v==="object")walk(v)}};walk(d);return out};
+const f2=n=>n==null?'<span class="na">–</span>':(Math.abs(n)<0.005?"–":n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}));
+const signed=(n,dp=0)=>{if(n==null)return'<span class="na">–</span>';const r=dp?Number(n.toFixed(dp)):Math.round(n);if(r>0)return`<span class="disc">+${r.toLocaleString("en-US",{minimumFractionDigits:dp,maximumFractionDigits:dp})}</span>`;if(r<0)return`<span class="prem">(${Math.abs(r).toLocaleString("en-US",{minimumFractionDigits:dp,maximumFractionDigits:dp})})</span>`;return"0"};
+function flash(el){if(!el)return;el.classList.remove("filled");void el.offsetWidth;el.classList.add("filled")}
+function inbox(id,val,aria){return`<div class="ib edit"><button class="pm" type="button" data-for="${id}" aria-label="Flip sign">±</button><input class="num" id="${id}" value="${esc(val)}" inputmode="decimal" autocomplete="off" aria-label="${esc(aria)}"></div>`}
+document.addEventListener("click",e=>{const b=e.target.closest(".pm");if(!b)return;const el=$(b.dataset.for);if(!el)return;let v=el.value.trim();el.value=v.startsWith("-")?v.slice(1):(v?"-"+v:"-");el.dispatchEvent(new Event("input",{bubbles:true}));el.focus()});
+const say=(t,bad)=>{const s=$("pfstat");s.textContent=t;s.classList.toggle("bad",!!bad)};
+const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const today=new Date();
+
+
+/* ===== 1. ZIM ===== */
+const ZIM={key:"pc_zim",fields:{go:[["ice","ICE","$/mt"],["gob","GO Beira","$/m3"],["gos","GO Msasa","$/m3"],["gom","GO Mabvuku","$/m3"],["god","GO DAR","$/m3"],["efs","EFS",""],["tmg","TM","Beira"],["spr","Spread",""]],mo:[["rbob","Rbob","$"],["mob","MO Beira","$/m3"],["mos","MO Msasa","$/m3"],["mom","MO Mabvuku","$/m3"],["mod","MO DAR","$/m3"],["tmm","TM","+"]]}};
+ZIM.st=load(ZIM.key,{m_price:MON[today.getMonth()],m_ice:MON[(today.getMonth()+1)%12]});
+ZIM.v=id=>String(ZIM.st[id]??"").trim();
+ZIM.msg=()=>{const v=ZIM.v,P=v("m_price"),N=v("m_ice");return `${P} Pricing
+${N} ICE - $${v("ice")}/mt
+GO Beira - $${v("gob")}/m3
+GO Msasa -$${v("gos")}/m3
+GO Mabvuku - $${v("gom")}/m3
+GO DAR - $${v("god")}/m3
+EFS - (${v("efs")})
+TM - ${v("tmg")} - Beira 
+Spread - ${v("spr")}
+ 
+${N} Rbob - $${v("rbob")}
+MO Beira - $${v("mob")}/m3
+MO Msasa - $${v("mos")}/m3
+MO Mabvuku - $${v("mom")}/m3
+MO DAR - $${v("mod")}/m3
+TM - +${v("tmm")}`};
+ZIM.build=()=>{const r=(g,t)=>`<div class="box"><h2>${t}</h2>${ZIM.fields[g].map(([id,l,u])=>`<div class="zrow"><label for="z_${id}">${l}${u?`<small>${u}</small>`:""}</label><button class="pm" type="button" data-for="z_${id}" aria-label="Flip sign">±</button><input id="z_${id}" data-z="${id}" inputmode="decimal" autocomplete="off" value="${esc(ZIM.st[id]??"")}"></div>`).join("")}</div>`;
+ $("zim").innerHTML=`<p class="hint">Type today’s numbers. Send the text (buttons below) or the card as a picture.</p><div class="box"><h2>Months</h2><div class="months"><label for="z_m_price">Pricing month<input id="z_m_price" data-z="m_price" value="${esc(ZIM.st.m_price)}"></label><label for="z_m_ice">ICE / Rbob month<input id="z_m_ice" data-z="m_ice" value="${esc(ZIM.st.m_ice)}"></label></div></div>${r("go","Gasoil")}${r("mo","Mogas")}<div class="box"><h2>Message</h2><pre class="preview" id="z_out"></pre></div><div class="box"><h2>Card (picture)</h2><div id="z_card"></div><button class="btn sm primary" type="button" id="z_pic" style="margin-top:8px">Send card as picture</button></div>`;
+ ZIM.paint()};
+ZIM.cardHTML=()=>{const v=ZIM.v,P=v("m_price")||"",N=v("m_ice")||"";
+ const c=x=>x===""?'<span class="na">–</span>':esc(x);
+ const loc=[["Beira","gob","mob"],["Msasa","gos","mos"],["Mabvuku","gom","mom"],["Dar es Salaam","god","mod"]];
+ let rows=`<tr class="band"><td colspan="3">FCA / EX-TANK &nbsp; $/m³</td></tr>`+loc.map(([n,g,m])=>`<tr><td>${n}</td><td class="n nd">${c(v(g))}</td><td class="n nu">${c(v(m))}</td></tr>`).join("");
+ rows+=`<tr class="band"><td colspan="3">FUTURES &amp; BASIS</td></tr>`
+  +`<tr><td>${esc(N)} ICE gasoil &nbsp;<small class="na">$/mt</small></td><td class="n nd">${c(v("ice"))}</td><td class="n nu"><span class="na">–</span></td></tr>`
+  +`<tr><td>${esc(N)} RBOB &nbsp;<small class="na">$/gal</small></td><td class="n nd"><span class="na">–</span></td><td class="n nu">${c(v("rbob"))}</td></tr>`
+  +`<tr><td>EFS</td><td class="n nd">${v("efs")===""?'<span class="na">–</span>':"("+esc(v("efs"))+")"}</td><td class="n nu"><span class="na">–</span></td></tr>`
+  +`<tr><td>TM · Beira</td><td class="n nd">${c(v("tmg"))}</td><td class="n nu">${v("tmm")===""?'<span class="na">–</span>':"+"+esc(v("tmm"))}</td></tr>`
+  +`<tr><td>Spread</td><td class="n nd">${c(v("spr"))}</td><td class="n nu"><span class="na">–</span></td></tr>`;
+ return`<div class="mc sapic zpic"><div class="mt">ZIMBABWE PRICING &nbsp;·&nbsp; ${esc(P)}<small style="display:block;font-weight:500;opacity:.85">${esc(N)} ICE &amp; RBOB basis</small></div><table><thead><tr><th class="cor"><b>Location</b></th><th class="d">GO</th><th class="u">MO</th></tr></thead><tbody>${rows}</tbody></table><div class="foot">GO = gasoil · MO = mogas · FCA / ex-tank prices in $/m³ · EFS in brackets</div></div>`};
+ZIM.paint=()=>{$("z_out").textContent=ZIM.msg();const zc=$("z_card");if(zc)zc.innerHTML=ZIM.cardHTML();store(ZIM.key,ZIM.st)};
+$("zim").addEventListener("input",e=>{const k=e.target.dataset.z;if(!k)return;ZIM.st[k]=e.target.value;ZIM.paint()});
+ZIM.PF={ice:"ICE gasoil, the futures month shown (\"<month> ICE\"), $/mt",gob:"Gasoil (GO) at Beira, $/m3",gos:"Gasoil (GO) at Msasa, $/m3",gom:"Gasoil (GO) at Mabvuku, $/m3",god:"Gasoil (GO) at Dar es Salaam (DAR), $/m3",efs:"EFS (the message shows it in brackets, e.g. EFS - (12) → 12; give the number without the brackets)",tmg:"Gasoil TM at Beira",spr:"Gasoil spread",rbob:"RBOB, the futures month shown",mob:"Mogas (MO / gasoline / ULP) at Beira, $/m3",mos:"Mogas at Msasa, $/m3",mom:"Mogas at Mabvuku, $/m3",mod:"Mogas at Dar es Salaam (DAR), $/m3",tmm:"Mogas TM"};
+ZIM.prompt=t=>"The attached picture (or pasted text below) shows Zimbabwe fuel prices: either a pricing sheet/table or a WhatsApp price message like:\nOct Pricing\nNov ICE - $650/mt\nGO Beira - $1,120/m3\nGO Msasa -$1,180/m3\n...\nEFS - (12)\nTM - 15 - Beira\nSpread - 4\n\nNov Rbob - $1.95\nMO Beira - $1,050/m3 ...\nTM - +20\n\nRead these values:\n"+Object.entries(ZIM.PF).map(([k,d])=>"- "+k+": "+d).join("\n")+"\n- m_price: the pricing month name (e.g. Oct)\n- m_ice: the ICE/RBOB contract month name (e.g. Nov)\nRules: the dash between a label and its value (\"GO Msasa -$1,180\") is a separator, NOT a minus sign; a number in brackets like (12) or written with a minus directly before the digits after a separator (\"TM - -5\") is negative; ignore $, /m3 and commas; GO = gasoil (first block), MO = mogas (second block); use null for anything not shown; do not calculate.\nReply with only one flat JSON object with exactly these keys and plain JSON numbers, e.g. {\"ice\":650,\"gob\":1120,...,\"m_price\":\"Oct\",\"m_ice\":\"Nov\"}."+(t?"\n\nPasted text:\n"+t:"");
+ZIM.apply=d0=>{const d=flat(d0,[...Object.keys(ZIM.PF),"m_price","m_ice"]);let n=0;const got={};for(const k of Object.keys(ZIM.PF)){let v=toN(d[k]);if(v!=null){if(k==="efs"||k==="tmm")v=Math.abs(v);ZIM.st[k]=String(v);got[k]=1;n++}}
+ for(const k of["m_price","m_ice"])if(typeof d[k]==="string"&&d[k].trim())ZIM.st[k]=d[k].trim().slice(0,12);
+ ZIM.build();Object.keys(got).forEach(k=>flash($("z_"+k)));return n};
+ZIM.clear=()=>{Object.values(ZIM.fields).flat().forEach(([id])=>delete ZIM.st[id]);ZIM.build()};
+
+
+const msgEl=$("msg");const toast=t=>{msgEl.textContent=t;clearTimeout(toast.t);toast.t=setTimeout(()=>msgEl.textContent="",2500)};
+let h2c=null;
+function loadH2C(){if(window.html2canvas)return Promise.resolve();if(h2c)return h2c;
+ h2c=new Promise((ok,bad)=>{const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";sc.onload=ok;sc.onerror=()=>{h2c=null;bad(new Error("load"))};document.head.appendChild(sc)});return h2c}
+async function elPicture(el){await loadH2C();const bg=getComputedStyle(document.body).backgroundColor;
+ const c=await html2canvas(el,{backgroundColor:bg,scale:Math.min(3,Math.max(2,window.devicePixelRatio||2)),useCORS:true,logging:false,onclone:d=>d.body.classList.add("cap"),windowWidth:Math.max(420,el.scrollWidth)});
+ return await new Promise(r=>c.toBlob(b=>r(b),"image/png"))}
+document.addEventListener("click",async e=>{const b=e.target.closest("#z_pic");if(!b||b.disabled)return;b.disabled=true;const o=b.textContent;b.textContent="Making picture…";
+ try{const card=document.querySelector("#z_card .mc");const blob=await elPicture(card);if(!blob)throw new Error("blank");const d=new Date();
+  const file=new File([blob],`Zim_Price_Card_${d.getDate()}${MON[d.getMonth()]}_${String(d.getHours()).padStart(2,"0")}${String(d.getMinutes()).padStart(2,"0")}.png`,{type:"image/png"});
+  if(!(await tryShare(file)))showPic(blob,file)}catch(err){toast("Couldn't make the picture here. Take a screenshot instead.")}finally{b.disabled=false;b.textContent=o}});
+
+async function tryShare(file){if(!navigator.canShare||!navigator.share)return false;try{if(!navigator.canShare({files:[file]}))return false;await navigator.share({files:[file]});return true}catch(e){return e&&e.name==="AbortError"}}
+function showPic(blob,file){const url=URL.createObjectURL(blob);const ov=document.createElement("div");ov.className="imgov";
+ ov.innerHTML=`<p><b>Press and hold the picture</b>, then tap <b>Share</b> → WhatsApp (or Save to Photos).<br>On a laptop: right-click → Copy image, then paste into WhatsApp.</p><img alt="Price card picture" src="${url}"><div class="row"><button class="btn primary" type="button" data-ov="share">Share…</button><button class="btn" type="button" data-ov="copy">Copy picture</button><button class="btn" type="button" data-ov="close">Close</button></div>`;
+ document.body.appendChild(ov);
+ ov.addEventListener("click",async e=>{const a=e.target.closest("[data-ov]");if(!a)return;
+  if(a.dataset.ov==="close"){ov.remove();URL.revokeObjectURL(url);return}
+  if(a.dataset.ov==="share"){if(!(await tryShare(file)))a.textContent="Hold the picture instead";return}
+  if(a.dataset.ov==="copy"){try{await navigator.clipboard.write([new ClipboardItem({"image/png":blob})]);a.textContent="Copied ✓"}catch(err){a.textContent="Hold the picture instead"}}})}
+
+async function copyText(t){try{await navigator.clipboard.writeText(t);return true}catch(e){const f=$("fb");f.value=t;f.select();try{return document.execCommand("copy")}catch(_){return false}}}
+$("b1").addEventListener("click",async()=>{toast(await copyText(ZIM.msg())?"Copied ✓":"Couldn't copy, select the message instead")});
+$("b2").addEventListener("click",()=>{const a=document.createElement("a");a.href="https://wa.me/?text="+encodeURIComponent(ZIM.msg());a.target="_blank";a.rel="noopener";document.body.appendChild(a);a.click();a.remove();toast("Opening WhatsApp…")});
+ZIM.build();
+</script></body></html>
